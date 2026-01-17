@@ -26,10 +26,9 @@ jobs:
         run: ng build --configuration production
         working-directory: ShoppingCart
 
-       -name: Run Angular app
+      - name: Run Angular app
         run: npm run build
         working-directory: ShoppingCart
- 
 
       - name: Docker login
         uses: docker/login-action@v2
