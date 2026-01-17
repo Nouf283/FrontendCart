@@ -100,7 +100,7 @@ jobs:
 
       - name: Build Angular app
         working-directory: ShoppingCart
-        run: npm run build --configuration production
+        run: npm run build
 
       - name: Copy build to EC2 via Bastion
         uses: appleboy/scp-action@v0.1.7
