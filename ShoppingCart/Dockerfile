@@ -18,7 +18,6 @@ RUN ng build --configuration production
 FROM nginx:alpine
 
 # Copy built Angular app
-# Make sure output folder matches angular.json outputPath
 COPY --from=build /app/dist/ShoppingCart /usr/share/nginx/html
 
 EXPOSE 80
