@@ -1,4 +1,4 @@
-name: Build & Deploy Angular 20 Frontend
+name: Build & Deploy Angular Frontend Docker
 
 on:
   push:
@@ -6,56 +6,63 @@ on:
       - master
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Setup Node.js
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '20' # Angular 20 supports Node 18 or 20
+          node-version: 20
 
-      # 3️⃣ Install Angular CLI globally
-      - name: Install Angular CLI
-        run: npm install -g @angular/cli@20
-        working-directory: ShoppingCart
-
-      # 4️⃣ Install dependencies
-      - name: Install npm dependencies
+      - name: Install dependencies
         run: npm ci
         working-directory: ShoppingCart
 
-      # 5️⃣ Build Angular app
       - name: Build Angular app
-        run: ng build --configuration production
+        run: npm run build -- --prod
         working-directory: ShoppingCart
 
-      # 6️⃣ Deploy to frontend EC2 via Bastion
-      - name: Deploy to Frontend EC2 via Bastion
+      - name: Docker login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest .
+        working-directory: ShoppingCart
+
+      - name: Push Docker image to Docker Hub
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest
+
+  deploy-to-ec2:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Deploy Angular frontend to EC2 via Bastion
         uses: appleboy/ssh-action@v0.1.9
         with:
-          host: ${{ secrets.FRONTEND_EC2_PRIVATE_IP }}
+          host: ${{ secrets.FRONTEND_PRIVATE_IP }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
 
-          # Use the same Bastion host
           proxy_host: ${{ secrets.EC2_BASTION_HOST }}
           proxy_username: ubuntu
           proxy_key: ${{ secrets.EC2_SSH_KEY }}
           proxy_port: 22
 
           script: |
-            # Remove old files
-            rm -rf /var/www/frontend/*
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest
 
-            # Copy new build files
-            cp -r /home/ubuntu/build/* /var/www/frontend/
+            docker stop angular-frontend || true
+            docker rm angular-frontend || true
 
-            # Restart web server if using nginx
-            systemctl restart nginx || true
+            docker run -d --name angular-frontend \
+              -p 80:80 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest
