@@ -5,7 +5,7 @@ WORKDIR /app
 COPY ShoppingCart/package*.json ./
 RUN npm ci
 
-COPY ShoppingCart/ ./
+COPY ./ ./
 RUN npm install -g @angular/cli
 RUN ng build --configuration production
 
