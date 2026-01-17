@@ -23,17 +23,17 @@ jobs:
       # 3️⃣ Install Angular CLI globally
       - name: Install Angular CLI
         run: npm install -g @angular/cli@20
-        working-directory: FrontendCart/ShoppingCart
+        working-directory: ShoppingCart
 
       # 4️⃣ Install dependencies
       - name: Install npm dependencies
         run: npm ci
-        working-directory: FrontendCart/ShoppingCart
+        working-directory: ShoppingCart
 
       # 5️⃣ Build Angular app
       - name: Build Angular app
         run: ng build --configuration production
-        working-directory: FrontendCart/ShoppingCart
+        working-directory: ShoppingCart
 
       # 6️⃣ Deploy to frontend EC2 via Bastion
       - name: Deploy to Frontend EC2 via Bastion
