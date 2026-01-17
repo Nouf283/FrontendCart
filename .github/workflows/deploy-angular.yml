@@ -102,21 +102,22 @@ jobs:
         working-directory: ShoppingCart
         run: npm run build
 
+      # Step 1: Copy Angular browser folder to EC2 user's home directory
       - name: Copy build to EC2 via Bastion
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.FRONTEND_PRIVATE_IP }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: 'ShoppingCart/dist/ShoppingCart/*'
-          target: '/var/www/html'
-          strip_components: 3
+          source: 'ShoppingCart/dist/ShoppingCart/browser/*'
+          target: '/home/ubuntu/angular-build'
 
           proxy_host: ${{ secrets.EC2_BASTION_HOST }}
           proxy_username: ubuntu
           proxy_key: ${{ secrets.EC2_SSH_KEY }}
 
-      - name: Restart NGINX
+      # Step 2: Move files into /var/www/html with sudo and restart NGINX
+      - name: Deploy Angular files to NGINX
         uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.FRONTEND_PRIVATE_IP }}
@@ -128,5 +129,15 @@ jobs:
           proxy_key: ${{ secrets.EC2_SSH_KEY }}
 
           script: |
+            # Remove old files
+            sudo rm -rf /var/www/html/*
+            sudo mkdir -p /var/www/html
+
+            # Copy build files
+            sudo cp -r /home/ubuntu/angular-build/* /var/www/html
+
+            # Fix permissions for NGINX
             sudo chown -R www-data:www-data /var/www/html
+
+            # Restart NGINX
             sudo systemctl restart nginx
