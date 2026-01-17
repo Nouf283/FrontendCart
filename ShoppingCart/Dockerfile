@@ -2,7 +2,7 @@
 FROM node:20 AS build
 
 WORKDIR /app
-COPY ShoppingCart/package*.json ./
+COPY package*.json ./
 RUN npm ci
 
 COPY ./ ./
