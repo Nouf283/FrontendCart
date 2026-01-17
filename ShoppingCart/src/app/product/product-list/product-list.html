@@ -1,0 +1,51 @@
+<div class="container g-4">
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+
+        @for (product of products; track $index){
+        <div class="col">
+            <div class="card shadow-sm" style="height: 100%; border-radius: 8px; overflow: hidden;">
+                <img [src]="product.pictureUrl" alt="{{ product.name || 'Product Image' }}" class="card-img-top"
+                    style="width: 100%; object-fit: cover;" />
+                <div class="card-body">
+                    <h5 style="margin: 0 0 5px 0; font-weight: bold;"><a (click)="goToProductDetail(product)"
+                            class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">
+                            {{ product.name }}</a></h5>
+
+                    <p style="margin: 0 0 10px 0; color: #198754; font-weight: bold;">
+                        ${{ product.price }}
+                    </p>
+                    <p style="margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {{ product.description }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        }
+
+    </div>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @for (product of products; track $index){
+        <tr>
+            <td>
+                <a (click)="goToProductDetail(product)">
+                    {{ product.name }}
+                </a>
+            </td>
+            <td>${{ product.price }}</td>
+            <td>{{ product.description }}</td>
+        </tr>
+        }
+    </tbody>
+</table>
