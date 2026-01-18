@@ -168,10 +168,10 @@ jobs:
       # Deploy to Kubernetes
       - name: Deploy to Kubernetes
         run: |
-          # Decode base64 kubeconfig secret into a file
-          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 --decode > kubeconfig.yaml
-          export KUBECONFIG=$(pwd)/kubeconfig.yaml
+        # Decode base64 kubeconfig secret into a file
+        echo "${{ secrets.KUBECONFIG_B64 }}" | base64 --decode > kubeconfig.yaml
+        export KUBECONFIG=$(pwd)/kubeconfig.yaml
 
-          # Apply Kubernetes manifests
-          kubectl apply -f FrontendCart/ShoppingCart/k8s/frontend-deployment.yaml
-          kubectl apply -f FrontendCart/ShoppingCart/k8s/frontend-service.yaml
+        # Apply Kubernetes manifests
+        kubectl apply -f ShoppingCart/k8s/frontend-deployment.yaml
+        kubectl apply -f ShoppingCart/k8s/frontend-service.yaml
