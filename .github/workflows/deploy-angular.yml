@@ -156,24 +156,33 @@ jobs:
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest
 
-      - name: List files in repo
-        run: ls -R
-
       # Setup kubectl
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: 'v1.29.0'
 
-      - name: Deploy from Bastion
+        # Step 5: Deploy Kubernetes manifests via Bastion
+      - name: Deploy to Kubernetes via Bastion
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_BASTION_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            # Move to repo on Bastion
             cd /home/ubuntu/FrontendCart
             git pull
-            export KUBECONFIG=/home/ubuntu/kubeconfig
-            kubectl apply -f ShoppingCart/k8s/forntend-deployment.yaml
+
+            # Make sure kubeconfig exists
+            if [ ! -f ~/kubeconfig ]; then
+              echo "Error: kubeconfig not found on bastion!"
+              exit 1
+            fi
+
+            # Export kubeconfig
+            export KUBECONFIG=~/kubeconfig
+
+            # Apply manifests
+            kubectl apply -f ShoppingCart/k8s/frontend-deployment.yaml
             kubectl apply -f ShoppingCart/k8s/frontend-service.yaml
