@@ -155,3 +155,20 @@ jobs:
 
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest
+
+      # Setup kubectl
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.29.0'
+
+      # Deploy to Kubernetes
+      - name: Deploy to Kubernetes
+        run: |
+          # Decode base64 kubeconfig secret into a file
+          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 --decode > kubeconfig.yaml
+          export KUBECONFIG=$(pwd)/kubeconfig.yaml
+
+          # Apply Kubernetes manifests
+          kubectl apply -f ShoppingCart/k8s/frontend-deployment.yaml
+          kubectl apply -f ShoppingCart/k8s/frontend-service.yaml
