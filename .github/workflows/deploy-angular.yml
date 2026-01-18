@@ -157,8 +157,7 @@ jobs:
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest
 
       - name: List files in repo
-         run: ls -R
-
+        run: ls -R
 
       # Setup kubectl
       - name: Set up kubectl
