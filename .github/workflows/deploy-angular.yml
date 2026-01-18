@@ -170,5 +170,5 @@ jobs:
           export KUBECONFIG=$(pwd)/kubeconfig.yaml
 
           # Apply Kubernetes manifests
-          kubectl apply -f ShoppingCart/k8s/frontend-deployment.yaml
-          kubectl apply -f ShoppingCart/k8s/frontend-service.yaml
+          kubectl apply -f FrontendCart/ShoppingCart/k8s/frontend-deployment.yaml
+          kubectl apply -f FrontendCart/ShoppingCart/k8s/frontend-service.yaml
