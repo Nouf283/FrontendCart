@@ -172,17 +172,8 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            cd /home/ubuntu/FrontendCart
+            git pull
             export KUBECONFIG=/home/ubuntu/kubeconfig
-            kubectl apply -f /home/ubuntu/ShoppingCart/k8s/frontend-deployment.yaml
-            kubectl apply -f /home/ubuntu/ShoppingCart/k8s/frontend-service.yaml
-
-      # Deploy to Kubernetes
-      - name: Deploy to Kubernetes
-        run: |
-          # Decode base64 kubeconfig secret into a file
-          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 --decode > kubeconfig.yaml
-          export KUBECONFIG=$(pwd)/kubeconfig.yaml
-
-          # Apply Kubernetes manifests
-          kubectl apply -f ShoppingCart/k8s/frontend-deployment.yaml
-          kubectl apply -f ShoppingCart/k8s/frontend-service.yaml
+            kubectl apply -f ShoppingCart/k8s/forntend-deployment.yaml
+            kubectl apply -f ShoppingCart/k8s/frontend-service.yaml
