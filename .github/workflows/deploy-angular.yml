@@ -236,32 +236,32 @@ jobs:
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest
 
-      # 8️⃣ Deploy to Kubernetes via Bastion
-      - name: Deploy to Kubernetes
-        uses: appleboy/ssh-action@v0.1.9
-        with:
-          host: ${{ secrets.EC2_BASTION_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            # Ensure kubeconfig exists
-            if [ ! -f ~/kubeconfig ]; then
-              echo "Error: kubeconfig not found on bastion!"
-              exit 1
-            fi
+      # # 8️⃣ Deploy to Kubernetes via Bastion
+      # - name: Deploy to Kubernetes
+      #   uses: appleboy/ssh-action@v0.1.9
+      #   with:
+      #     host: ${{ secrets.EC2_BASTION_HOST }}
+      #     username: ubuntu
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     script: |
+      #       # Ensure kubeconfig exists
+      #       if [ ! -f ~/kubeconfig ]; then
+      #         echo "Error: kubeconfig not found on bastion!"
+      #         exit 1
+      #       fi
 
-            # Export kubeconfig
-            export KUBECONFIG=~/kubeconfig
+      #       # Export kubeconfig
+      #       export KUBECONFIG=~/kubeconfig
 
-            # Create namespace if not exists
-            kubectl create namespace frontend --dry-run=client -o yaml | kubectl apply -f -
+      #       # Create namespace if not exists
+      #       kubectl create namespace frontend --dry-run=client -o yaml | kubectl apply -f -
 
-            # Apply manifests
-            kubectl apply -f k8s/frontend-deployment.yaml -n frontend
-            kubectl apply -f k8s/frontend-service.yaml -n frontend
-            kubectl apply -f k8s/frontend-ingress.yaml -n frontend
+      #       # Apply manifests
+      #       kubectl apply -f k8s/frontend-deployment.yaml -n frontend
+      #       kubectl apply -f k8s/frontend-service.yaml -n frontend
+      #       kubectl apply -f k8s/frontend-ingress.yaml -n frontend
 
-            # Rollout status
-            kubectl rollout status deployment/angular-frontend -n frontend
-            kubectl get pods -n frontend
-            kubectl get svc -n frontend
+      #       # Rollout status
+      #       kubectl rollout status deployment/angular-frontend -n frontend
+      #       kubectl get pods -n frontend
+      #       kubectl get svc -n frontend
