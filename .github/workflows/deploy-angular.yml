@@ -211,17 +211,17 @@ jobs:
 
       # 3️⃣ Install dependencies
       - name: Install dependencies
-        working-directory: FrontendCart
+        working-directory: FrontendCart/ShoppingCart
         run: npm ci
 
       # 4️⃣ Build Angular app
       - name: Build Angular app
-        working-directory: FrontendCart
+        working-directory: FrontendCart/ShoppingCart
         run: npm run build
 
       # 5️⃣ Build Angular Docker image
       - name: Build Angular Docker image
-        working-directory: FrontendCart
+        working-directory: FrontendCart/ShoppingCart
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest .
 
@@ -257,9 +257,9 @@ jobs:
             kubectl create namespace frontend --dry-run=client -o yaml | kubectl apply -f -
 
             # Apply manifests
-            kubectl apply -f FrontendCart/k8s/frontend-deployment.yaml
-            kubectl apply -f FrontendCart/k8s/frontend-service.yaml
-            kubectl apply -f FrontendCart/k8s/frontend-ingress.yaml
+            kubectl apply -f k8s/frontend-deployment.yaml -n frontend
+            kubectl apply -f k8s/frontend-service.yaml -n frontend
+            kubectl apply -f k8s/frontend-ingress.yaml -n frontend
 
             # Rollout status
             kubectl rollout status deployment/angular-frontend -n frontend
