@@ -7,7 +7,8 @@ import { Product } from '../models/product';
   providedIn: 'root'
 })
 export class ProductServices {
-  private baseUrl = 'https://localhost:44374/api/Product';
+  // private baseUrl = 'https://localhost:44374/api/Product';
+  private baseUrl = 'http://backend-cart-alb-1376900669.ap-southeast-1.elb.amazonaws.com/api/Product';
   private _products: any[] = [];
 
   private selectedProductSource = new BehaviorSubject<any>(null);
