@@ -74,7 +74,120 @@
 #               -p 80:80 \
 #               ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest
 
-name: Build & Deploy Angular (No Docker)
+# name: Build & Deploy Angular (No Docker)
+
+# on:
+#   push:
+#     branches:
+#       - master
+
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       - name: Setup Node
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 20
+
+#       - name: Install dependencies
+#         working-directory: ShoppingCart
+#         run: npm ci
+
+#       - name: Build Angular app
+#         working-directory: ShoppingCart
+#         run: npm run build
+
+#       # Step 1: Copy Angular browser folder to EC2 user's home directory
+#       - name: Copy build to EC2 via Bastion
+#         uses: appleboy/scp-action@v0.1.7
+#         with:
+#           host: ${{ secrets.FRONTEND_PRIVATE_IP }}
+#           username: ubuntu
+#           key: ${{ secrets.EC2_SSH_KEY }}
+#           source: 'ShoppingCart/dist/ShoppingCart/browser/*'
+#           target: '/home/ubuntu/angular-build'
+
+#           proxy_host: ${{ secrets.EC2_BASTION_HOST }}
+#           proxy_username: ubuntu
+#           proxy_key: ${{ secrets.EC2_SSH_KEY }}
+
+#       # Step 2: Move files into /var/www/html with sudo and restart NGINX
+#       - name: Deploy Angular files to NGINX
+#         uses: appleboy/ssh-action@v0.1.9
+#         with:
+#           host: ${{ secrets.FRONTEND_PRIVATE_IP }}
+#           username: ubuntu
+#           key: ${{ secrets.EC2_SSH_KEY }}
+
+#           proxy_host: ${{ secrets.EC2_BASTION_HOST }}
+#           proxy_username: ubuntu
+#           proxy_key: ${{ secrets.EC2_SSH_KEY }}
+
+#           script: |
+#             # Remove old files
+#             sudo rm -rf /var/www/html/*
+#             sudo mkdir -p /var/www/html
+
+#             # Copy build files
+#             sudo cp -r /home/ubuntu/angular-build/* /var/www/html
+
+#             # Fix permissions for NGINX
+#             sudo chown -R www-data:www-data /var/www/html
+
+#             # Restart NGINX
+#             sudo systemctl restart nginx
+#       # Step 3: Build and push Angular Docker image
+#       - name: Build Angular Docker image
+#         working-directory: ShoppingCart
+#         run: |
+#           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest .
+
+#       - name: Docker login
+#         uses: docker/login-action@v2
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+#       - name: Push Docker image
+#         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest
+
+#       # Setup kubectl
+#       - name: Set up kubectl
+#         uses: azure/setup-kubectl@v3
+#         with:
+#           version: 'v1.29.0'
+
+#         # Step 5: Deploy Kubernetes manifests via Bastion
+#       - name: Deploy to Kubernetes via Bastion
+#         uses: appleboy/ssh-action@v1.0.0
+#         with:
+#           host: ${{ secrets.EC2_BASTION_HOST }}
+#           username: ubuntu
+#           key: ${{ secrets.EC2_SSH_KEY }}
+#           script: |
+#             # Move to repo on Bastion
+#             cd /home/ubuntu/FrontendCart
+#             git pull
+
+#             # Make sure kubeconfig exists
+#             if [ ! -f ~/kubeconfig ]; then
+#               echo "Error: kubeconfig not found on bastion!"
+#               exit 1
+#             fi
+
+#             # Export kubeconfig
+#             export KUBECONFIG=~/kubeconfig
+
+#             # Apply manifests
+#             kubectl apply -f ShoppingCart/k8s/frontend-deployment.yaml
+#             kubectl apply -f ShoppingCart/k8s/frontend-service.yaml
+
+name: Build & Deploy Angular Frontend
 
 on:
   push:
@@ -86,95 +199,52 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      # 2️⃣ Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      # 3️⃣ Install dependencies
       - name: Install dependencies
-        working-directory: ShoppingCart
+        working-directory: FrontendCart
         run: npm ci
 
+      # 4️⃣ Build Angular app
       - name: Build Angular app
-        working-directory: ShoppingCart
+        working-directory: FrontendCart
         run: npm run build
 
-      # Step 1: Copy Angular browser folder to EC2 user's home directory
-      - name: Copy build to EC2 via Bastion
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.FRONTEND_PRIVATE_IP }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: 'ShoppingCart/dist/ShoppingCart/browser/*'
-          target: '/home/ubuntu/angular-build'
-
-          proxy_host: ${{ secrets.EC2_BASTION_HOST }}
-          proxy_username: ubuntu
-          proxy_key: ${{ secrets.EC2_SSH_KEY }}
-
-      # Step 2: Move files into /var/www/html with sudo and restart NGINX
-      - name: Deploy Angular files to NGINX
-        uses: appleboy/ssh-action@v0.1.9
-        with:
-          host: ${{ secrets.FRONTEND_PRIVATE_IP }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-
-          proxy_host: ${{ secrets.EC2_BASTION_HOST }}
-          proxy_username: ubuntu
-          proxy_key: ${{ secrets.EC2_SSH_KEY }}
-
-          script: |
-            # Remove old files
-            sudo rm -rf /var/www/html/*
-            sudo mkdir -p /var/www/html
-
-            # Copy build files
-            sudo cp -r /home/ubuntu/angular-build/* /var/www/html
-
-            # Fix permissions for NGINX
-            sudo chown -R www-data:www-data /var/www/html
-
-            # Restart NGINX
-            sudo systemctl restart nginx
-      # Step 3: Build and push Angular Docker image
+      # 5️⃣ Build Angular Docker image
       - name: Build Angular Docker image
-        working-directory: ShoppingCart
+        working-directory: FrontendCart
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest .
 
+      # 6️⃣ Docker login
       - name: Docker login
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+      # 7️⃣ Push Docker image
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/angular-frontend:latest
 
-      # Setup kubectl
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'v1.29.0'
-
-        # Step 5: Deploy Kubernetes manifests via Bastion
-      - name: Deploy to Kubernetes via Bastion
-        uses: appleboy/ssh-action@v1.0.0
+      # 8️⃣ Deploy to Kubernetes via Bastion
+      - name: Deploy to Kubernetes
+        uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.EC2_BASTION_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Move to repo on Bastion
-            cd /home/ubuntu/FrontendCart
-            git pull
-
-            # Make sure kubeconfig exists
+            # Ensure kubeconfig exists
             if [ ! -f ~/kubeconfig ]; then
               echo "Error: kubeconfig not found on bastion!"
               exit 1
@@ -183,6 +253,15 @@ jobs:
             # Export kubeconfig
             export KUBECONFIG=~/kubeconfig
 
+            # Create namespace if not exists
+            kubectl create namespace frontend --dry-run=client -o yaml | kubectl apply -f -
+
             # Apply manifests
-            kubectl apply -f ShoppingCart/k8s/frontend-deployment.yaml
-            kubectl apply -f ShoppingCart/k8s/frontend-service.yaml
+            kubectl apply -f FrontendCart/k8s/frontend-deployment.yaml
+            kubectl apply -f FrontendCart/k8s/frontend-service.yaml
+            kubectl apply -f FrontendCart/k8s/frontend-ingress.yaml
+
+            # Rollout status
+            kubectl rollout status deployment/angular-frontend -n frontend
+            kubectl get pods -n frontend
+            kubectl get svc -n frontend
